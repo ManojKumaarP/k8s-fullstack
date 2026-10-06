@@ -1,8 +1,14 @@
 package com.example.employee;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "employees")
 public class Employee {
 
-    private Long id;
+    @Id
+    private String id;
+
     private String name;
     private String role;
     private String department;
@@ -10,18 +16,17 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Long id, String name, String role, String department) {
-        this.id = id;
+    public Employee(String name, String role, String department) {
         this.name = name;
         this.role = role;
         this.department = department;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
