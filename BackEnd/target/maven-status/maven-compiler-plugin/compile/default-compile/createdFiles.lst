@@ -1,3 +1,4 @@
+com\example\employee\EmployeeController.class
+com\example\employee\EmployeeRepository.class
 com\example\employee\Employee.class
 com\example\employee\EmployeeApplication.class
-com\example\employee\EmployeeController.class
