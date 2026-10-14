@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: fullstack
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+      containers:
+        - name: backend
+
+          image: manojkumaar/employee-backend:2.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_HOST
+
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_PORT
+
+            - name: MONGODB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_DATABASE
+
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_USERNAME
+
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_PASSWORD
