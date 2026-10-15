@@ -39,7 +39,7 @@ pipeline {
         }
         stage('Frontend Validation') {
             steps {
-                dir('Frontend') {
+                dir('FrontEnd') {
                     sh '''
                 test -f index.html
                 test -f app.js
