@@ -16,7 +16,7 @@ pipeline {
         }
         stage('Backend Build and test') {
             steps {
-                dir('backend') {
+                dir('Backend') {
                     sh 'mvn clean install'
                     echo 'Backend build and tests completed successfully.'
                 }
