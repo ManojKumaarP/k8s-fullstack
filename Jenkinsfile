@@ -53,8 +53,8 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 sh '''
-                docker build -t YOUR_DOCKERHUB_USERNAME/k8s-fullstack-frontend:${BUILD_NUMBER} ./FrontEnd
-                docker build -t YOUR_DOCKERHUB_USERNAME/k8s-fullstack-backend:${BUILD_NUMBER} ./BackEnd
+                docker build -t ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER} ./FrontEnd
+                docker build -t ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER} ./BackEnd
                 echo "Docker images built successfully."'''
             }
         }
