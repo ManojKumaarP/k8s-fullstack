@@ -14,6 +14,15 @@ pipeline {
                 echo 'Source code checked out successfully.'
             }
         }
+        stage('Backend Build and test') {
+            steps {
+                dir('backend') {
+                    sh 'mvn clean install'
+                    echo 'Backend build and tests completed successfully.'
+                }
+                
+            }
+        }
     }
 
     post {
