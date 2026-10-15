@@ -2,6 +2,10 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK21'
+    }
+    
     options {
         timestamps()
         disableConcurrentBuilds()
