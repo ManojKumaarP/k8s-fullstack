@@ -1,26 +1,27 @@
+
 pipeline {
     agent any
 
     options {
         timestamps()
         disableConcurrentBuilds()
-    } 
-    
+    }
+
     stages {
-        stage ('Checkout') {
+        stage('Checkout') {
             steps {
                 checkout scm
                 echo 'Source code checked out successfully.'
             }
         }
     }
-    
+
     post {
-        sucess {
+        success {
             echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs for details.'
+            echo 'Pipeline failed. Check the console output.'
         }
         always {
             echo 'Pipeline execution finished.'
