@@ -60,6 +60,30 @@ pipeline {
         }
     }
 
+    stage('Push Images to Docker Hub') {
+        steps {
+            withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-creds',
+                usernameVariable: 'DOCKERHUB_USER',
+                passwordVariable: 'DOCKERHUB_TOKEN'
+            )
+        ]) {
+                sh '''
+                set +x
+                echo "$DOCKERHUB_TOKEN" | docker login \
+                    --username "$DOCKERHUB_USER" \
+                    --password-stdin
+
+                docker push ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER}
+                docker push ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER}
+
+                docker logout
+            '''
+        }
+        }
+    }
+
     post {
         success {
             echo 'Pipeline completed successfully.'
