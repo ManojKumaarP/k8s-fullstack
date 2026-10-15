@@ -37,6 +37,18 @@ pipeline {
                 }
             }
         }
+        stage('Frontend Validation') {
+            steps {
+                dir('Frontend') {
+                    sh '''
+                test -f index.html
+                test -f app.js
+                test -f style.css
+                echo "Frontend files validated successfully."
+            '''
+                }
+            }
+        }
     }
 
     post {
