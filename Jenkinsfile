@@ -32,7 +32,7 @@ pipeline {
 
         stage('Backend Build and Test') {
             steps {
-                dir('Backend') {
+                dir('BackEnd') {
                     sh 'mvn clean install'
                     echo 'Backend build and tests completed successfully.'
                 }
@@ -41,7 +41,7 @@ pipeline {
 
         stage('Frontend Validation') {
             steps {
-                dir('Frontend') {
+                dir('FrontEnd') {
                     sh '''
                         test -f index.html
                         test -f app.js
@@ -54,9 +54,10 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
+                /* groovylint-disable-next-line GStringExpressionWithinString */
                 sh '''
-                    docker build -t ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER} ./Frontend
-                    docker build -t ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER} ./Backend
+                    docker build -t ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER} ./FrontEnd
+                    docker build -t ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER} ./BackEnd
                     echo "Docker images built successfully."
                 '''
             }
@@ -71,6 +72,7 @@ pipeline {
                         passwordVariable: 'DOCKERHUB_TOKEN'
                     )
                 ]) {
+                    /* groovylint-disable-next-line GStringExpressionWithinString */
                     sh '''
                         set +x
                         echo "$DOCKERHUB_TOKEN" | docker login \
