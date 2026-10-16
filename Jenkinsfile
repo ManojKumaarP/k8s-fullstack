@@ -56,8 +56,8 @@ pipeline {
             steps {
                 /* groovylint-disable-next-line GStringExpressionWithinString */
                 sh '''
-                    docker build -t ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER} ./FrontEnd
-                    docker build -t ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER} ./BackEnd
+                    docker build -t manojkumaar/k8s-fullstack-frontend:${BUILD_NUMBER} ./FrontEnd
+                    docker build -t manojkumaar/k8s-fullstack-backend:${BUILD_NUMBER} ./BackEnd
                     echo "Docker images built successfully."
                 '''
             }
@@ -79,8 +79,8 @@ pipeline {
                             --username "$DOCKERHUB_USER" \
                             --password-stdin
 
-                        docker push ManojKumaarP/k8s-fullstack-frontend:${BUILD_NUMBER}
-                        docker push ManojKumaarP/k8s-fullstack-backend:${BUILD_NUMBER}
+                        docker push manojkumaar/k8s-fullstack-frontend:${BUILD_NUMBER}
+                        docker push manojkumaar/k8s-fullstack-backend:${BUILD_NUMBER}
 
                         docker logout
                     '''
