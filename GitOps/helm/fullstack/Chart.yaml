@@ -1,0 +1,6 @@
+apiVersion: v2
+name: fullstack
+description: Helm chart for the Full Stack employee application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
