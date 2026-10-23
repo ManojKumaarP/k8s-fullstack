@@ -101,66 +101,26 @@ pipeline {
             }
         }
 
-        stage('Kubernetes Pre-Deployment Check') {
-            steps {
-                sh '''
-                    set -eu
+        stage('Update GitOps Image Tags') {
+    steps {
+        sh '''
+            set -eu
 
-                    echo "Checking Kubernetes connectivity..."
-                    kubectl get nodes
+            VALUES_FILE="GitOps/helm/fullstack/values.yaml"
 
-                    echo "Checking application namespace..."
-                    kubectl get namespace fullstack
+            sed -i \
+              "s|^    tag: .*|    tag: \\"${BUILD_NUMBER}\\"|" \
+              "$VALUES_FILE"
 
-                    echo "Checking existing Deployments..."
-                    kubectl get deployments \
-                      backend frontend -n fullstack
+            echo "Updated Helm image tags:"
+            grep -A 4 -E '^(backend|frontend):' "$VALUES_FILE"
 
-                    echo "Checking Deployment container names..."
-                    kubectl get deployment backend frontend \
-                      -n fullstack \
-                      -o custom-columns='NAME:.metadata.name,CONTAINERS:.spec.template.spec.containers[*].name'
-                '''
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    set -eu
-
-                    echo "Deploying backend image..."
-                    kubectl set image deployment/backend \
-                      backend=manojkumaar/k8s-fullstack-backend:${BUILD_NUMBER} \
-                      -n fullstack
-
-                    echo "Deploying frontend image..."
-                    kubectl set image deployment/frontend \
-                      frontend=manojkumaar/k8s-fullstack-frontend:${BUILD_NUMBER} \
-                      -n fullstack
-
-                    echo "Waiting for backend rollout..."
-                    kubectl rollout status deployment/backend \
-                      -n fullstack --timeout=180s
-
-                    echo "Waiting for frontend rollout..."
-                    kubectl rollout status deployment/frontend \
-                      -n fullstack --timeout=180s
-
-                    echo "Verifying deployed images..."
-                    kubectl get deployments \
-                      backend frontend -n fullstack \
-                      -o custom-columns='NAME:.metadata.name,READY:.status.readyReplicas,IMAGES:.spec.template.spec.containers[*].image'
-
-                    echo "Checking application Pods..."
-                    kubectl get pods -n fullstack
-
-                    echo "Kubernetes deployment completed successfully."
-                '''
-            }
-        }
+            helm lint ./GitOps/helm/fullstack
+            helm template fullstack ./GitOps/helm/fullstack \
+              > /tmp/fullstack-rendered.yaml
+        '''
     }
-
+}
     post {
         success {
             echo 'CI/CD pipeline and Kubernetes deployment completed successfully.'
