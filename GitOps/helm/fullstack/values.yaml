@@ -1,0 +1,36 @@
+
+namespace: fullstack
+
+backend:
+  replicas: 2
+  image:
+    repository: manojkumaar/employee-backend
+    tag: "3.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8080
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      path: /actuator/health/readiness
+      initialDelaySeconds: 10
+      periodSeconds: 5
+    liveness:
+      path: /actuator/health/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 10
+
+frontend:
+  replicas: 2
+  image:
+    repository: manojkumaar/employee-frontend
+    tag: "2.0"
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
