@@ -137,12 +137,6 @@ pipeline {
 
                     echo "Updated image configuration:"
                     grep -n -A 3 -E '^backend:|^frontend:' "$VALUES_FILE"
-  
-                    grep -F "${BACKEND_IMAGE}:${BUILD_NUMBER}" \
-                      /tmp/fullstack-rendered.yaml
-
-                    grep -F "${FRONTEND_IMAGE}:${BUILD_NUMBER}" \
-                      /tmp/fullstack-rendered.yaml
 
                     git diff --check
                     git diff -- "$VALUES_FILE"
