@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -64,7 +63,7 @@ pipeline {
                       ./FrontEnd
 
                     docker build \
-                      -t manojkumaar/k8s-fullstack-backend:${BUILD_NUMBER} \
+                      -t manojkumaar/k8s-fullstack-backend-noroot:${BUILD_NUMBER} \
                       ./BackEnd
 
                     echo "Docker images built successfully."
@@ -90,7 +89,7 @@ pipeline {
                             --password-stdin
 
                         docker push \
-                          manojkumaar/k8s-fullstack-backend:${BUILD_NUMBER}
+                          manojkumaar/k8s-fullstack-backend-noroot:${BUILD_NUMBER}
 
                         docker push \
                           manojkumaar/k8s-fullstack-frontend:${BUILD_NUMBER}
@@ -102,28 +101,35 @@ pipeline {
         }
 
         stage('Update GitOps Image Tags') {
-    steps {
-        sh '''
-            set -eu
+            steps {
+                sh '''
+                    set -eu
 
-            VALUES_FILE="GitOps/helm/fullstack/values.yaml"
+                    VALUES_FILE="GitOps/helm/fullstack/values.yaml"
 
-            sed -i \
-              "s|^    tag: .*|    tag: \\"${BUILD_NUMBER}\\"|" \
-              "$VALUES_FILE"
+                    test -f "$VALUES_FILE"
 
-            echo "Updated Helm image tags:"
-            grep -A 4 -E '^(backend|frontend):' "$VALUES_FILE"
+                    sed -i \
+                      "s|^    tag: .*|    tag: \\"${BUILD_NUMBER}\\"|" \
+                      "$VALUES_FILE"
 
-            helm lint ./GitOps/helm/fullstack
-            helm template fullstack ./GitOps/helm/fullstack \
-              > /tmp/fullstack-rendered.yaml
-        '''
+                    echo "Updated Helm image tags:"
+                    grep -A 4 -E '^(backend|frontend):' "$VALUES_FILE"
+
+                    helm lint ./GitOps/helm/fullstack
+
+                    helm template fullstack ./GitOps/helm/fullstack \
+                      > /tmp/fullstack-rendered.yaml
+
+                    echo "Helm validation completed successfully."
+                '''
+            }
+        }
     }
-}
+
     post {
         success {
-            echo 'CI/CD pipeline and Kubernetes deployment completed successfully.'
+            echo 'CI pipeline completed successfully.'
         }
 
         failure {
