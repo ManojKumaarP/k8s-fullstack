@@ -137,12 +137,7 @@ pipeline {
 
                     echo "Updated image configuration:"
                     grep -n -A 3 -E '^backend:|^frontend:' "$VALUES_FILE"
-
-                    helm lint ./GitOps/helm/fullstack
-
-                    helm template fullstack ./GitOps/helm/fullstack \
-                      > /tmp/fullstack-rendered.yaml
-
+  
                     grep -F "${BACKEND_IMAGE}:${BUILD_NUMBER}" \
                       /tmp/fullstack-rendered.yaml
 
