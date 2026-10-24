@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: fullstack-deployment-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: fullstack-deployment.rules
+      rules:
+        - alert: KubernetesDeploymentReplicasUnavailable
+          expr: |
+            kube_deployment_spec_replicas{namespace="fullstack"}
+            >
+            kube_deployment_status_replicas_available{namespace="fullstack"}
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment replicas unavailable"
+            description: >-
+              Deployment {{ $labels.deployment }} in namespace
+              {{ $labels.namespace }} has fewer available replicas
+              than desired for more than 5 minutes.

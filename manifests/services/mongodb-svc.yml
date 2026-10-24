@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
-metadata: 
+metadata:
   name: mongodb
   namespace: fullstack
 spec:
-  clusterIP: None
+#  clusterIP: None
   selector:
     app: mongodb
   ports:
