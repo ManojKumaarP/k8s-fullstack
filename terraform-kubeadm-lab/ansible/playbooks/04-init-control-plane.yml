@@ -6,9 +6,10 @@
   gather_facts: true
 
   vars:
-    control_plane_ip: "10.70.0.133"
+    control_plane_ip: "10.70.0.50"
     pod_network_cidr: "192.168.0.0/16"
     cri_socket: "unix:///run/containerd/containerd.sock"
+    kubeconfig_path: "/home/ubuntu/.kube/config"
 
   tasks:
 
@@ -40,9 +41,52 @@
           - admin_config.stat.exists
         fail_msg: "Kubernetes initialization was unsuccessful"
 
+    # Configure kubectl for ubuntu user
+    - name: Create .kube directory for ubuntu
+      ansible.builtin.file:
+        path: /home/ubuntu/.kube
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy Kubernetes admin configuration
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ kubeconfig_path }}"
+        remote_src: true
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Set kubectl context
+      ansible.builtin.command:
+        cmd: kubectl config use-context kubernetes-admin@kubernetes
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ubuntu
+      register: kubectl_context
+      changed_when: "'Switched to context' in kubectl_context.stdout"
+
+    - name: Verify active kubectl context
+      ansible.builtin.command:
+        cmd: kubectl config current-context
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ubuntu
+      register: current_context
+      changed_when: false
+
+    - name: Display active kubectl context
+      ansible.builtin.debug:
+        var: current_context.stdout
+
     - name: Check Kubernetes nodes
       ansible.builtin.command:
-        cmd: kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes
+        cmd: kubectl get nodes
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ubuntu
       register: kubernetes_nodes
       changed_when: false
 
