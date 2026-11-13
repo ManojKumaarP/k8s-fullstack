@@ -1,0 +1,46 @@
+
+---
+- name: Dismantle Kubernetes cluster
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Reset kubeadm configuration
+      ansible.builtin.command:
+        cmd: kubeadm reset --force
+      failed_when: false
+
+    - name: Stop Kubernetes services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - kubelet
+      failed_when: false
+
+    - name: Remove Kubernetes configuration
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/kubernetes
+        - /var/lib/kubelet
+        - /etc/cni/net.d
+        - /var/lib/cni
+        - /root/.kube
+
+    - name: Remove iptables rules created by kube-proxy
+      ansible.builtin.command:
+        cmd: iptables -F
+      failed_when: false
+
+    - name: Remove Kubernetes iptables NAT rules
+      ansible.builtin.command:
+        cmd: iptables -t nat -F
+      failed_when: false
+
+    - name: Display completion
+      ansible.builtin.debug:
+        msg: "Kubernetes reset completed on {{ inventory_hostname }}"

@@ -1,0 +1,51 @@
+
+---
+- name: Initialize Kubernetes Control Plane
+  hosts: control_plane
+  become: true
+  gather_facts: true
+
+  vars:
+    control_plane_ip: "10.70.0.133"
+    pod_network_cidr: "192.168.0.0/16"
+    cri_socket: "unix:///run/containerd/containerd.sock"
+
+  tasks:
+
+    - name: Verify control plane IP
+      ansible.builtin.assert:
+        that:
+          - ansible_default_ipv4.address == control_plane_ip
+        fail_msg: "Control plane IP does not match expected IP"
+
+    - name: Initialize Kubernetes cluster
+      ansible.builtin.command:
+        argv:
+          - kubeadm
+          - init
+          - --apiserver-advertise-address={{ control_plane_ip }}
+          - --pod-network-cidr={{ pod_network_cidr }}
+          - --cri-socket={{ cri_socket }}
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+    - name: Verify Kubernetes admin configuration
+      ansible.builtin.stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_config
+
+    - name: Confirm control plane initialization
+      ansible.builtin.assert:
+        that:
+          - admin_config.stat.exists
+        fail_msg: "Kubernetes initialization was unsuccessful"
+
+    - name: Check Kubernetes nodes
+      ansible.builtin.command:
+        cmd: kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes
+      register: kubernetes_nodes
+      changed_when: false
+
+    - name: Display control plane status
+      ansible.builtin.debug:
+        var: kubernetes_nodes.stdout_lines

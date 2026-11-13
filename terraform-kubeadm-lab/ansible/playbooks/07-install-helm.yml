@@ -1,0 +1,32 @@
+- name: Install Helm 3 on Kubernetes Control Plane
+  hosts: kube_control_plane
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Install curl
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: true
+
+    - name: Download official Helm 3 installation script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /tmp/get-helm-3.sh
+        mode: '0755'
+
+    - name: Install Helm 3
+      ansible.builtin.command:
+        cmd: /tmp/get-helm-3.sh
+        creates: /usr/local/bin/helm
+
+    - name: Verify Helm installation
+      ansible.builtin.command:
+        cmd: helm version --short
+      register: helm_version
+      changed_when: false
+
+    - name: Display Helm version
+      ansible.builtin.debug:
+        msg: "{{ helm_version.stdout }}"

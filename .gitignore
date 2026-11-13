@@ -1,1 +1,11 @@
 manifests/secrets/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+*.backup
+terraform-state-backup.json
+*.bak
+*.pem
+*.key

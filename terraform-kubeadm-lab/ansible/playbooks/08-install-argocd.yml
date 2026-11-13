@@ -1,0 +1,103 @@
+
+---
+- name: Install Argo CD using Helm
+  hosts: kube_control_plane
+  become: true
+  gather_facts: false
+
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+  vars:
+    argocd_namespace: argocd
+    argocd_helm_repo: https://argoproj.github.io/argo-helm
+    argocd_chart: argo/argo-cd
+
+  tasks:
+
+    - name: Add Argo CD Helm repository
+      ansible.builtin.command:
+        argv:
+          - helm
+          - repo
+          - add
+          - argo
+          - "{{ argocd_helm_repo }}"
+      register: argocd_repo
+      changed_when: "'has been added' in argocd_repo.stdout"
+
+    - name: Update Helm repositories
+      ansible.builtin.command:
+        cmd: helm repo update
+      changed_when: false
+
+    - name: Create Argo CD namespace
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - create
+          - namespace
+          - "{{ argocd_namespace }}"
+      register: argocd_ns
+      changed_when: argocd_ns.rc == 0
+      failed_when:
+        - argocd_ns.rc != 0
+        - "'AlreadyExists' not in argocd_ns.stderr"
+
+    - name: Install or upgrade Argo CD using Helm
+      ansible.builtin.command:
+        argv:
+          - helm
+          - upgrade
+          - --install
+          - argocd
+          - "{{ argocd_chart }}"
+          - --namespace
+          - "{{ argocd_namespace }}"
+          - --wait
+          - --timeout
+          - 10m
+      register: argocd_install
+      changed_when: "'has been upgraded' in argocd_install.stdout or 'has been installed' in argocd_install.stdout"
+
+    - name: Wait for Argo CD server deployment
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - rollout
+          - status
+          - deployment/argocd-server
+          - -n
+          - "{{ argocd_namespace }}"
+          - --timeout=300s
+      changed_when: false
+
+    - name: Display Argo CD pods
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - get
+          - pods
+          - -n
+          - "{{ argocd_namespace }}"
+      register: argocd_pods
+      changed_when: false
+
+    - name: Show Argo CD pod status
+      ansible.builtin.debug:
+        var: argocd_pods.stdout_lines
+
+    - name: Display Argo CD services
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - get
+          - services
+          - -n
+          - "{{ argocd_namespace }}"
+      register: argocd_services
+      changed_when: false
+
+    - name: Show Argo CD service status
+      ansible.builtin.debug:
+        var: argocd_services.stdout_lines
